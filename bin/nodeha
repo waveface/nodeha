@@ -1,0 +1,35 @@
+#!/usr/local/bin/node
+
+var http = require('http'),
+    fs = require('fs'),
+    NodeHA = require('nodeha').NodeHA,
+    argv = require('optimist').argv;
+
+var help = [
+    "usage: nodeha [options] ",
+    "",
+    "Starts a High Availability Node proxy",
+    "",
+    "options:",
+    "  -h, --help             The usage manual you are looking at",
+    "  -c, --config FILENAME  Specify the config file"
+].join('\n');
+
+if (argv.h || argv.help || (!argv.c && !argv.config)) {
+    return console.error(help);
+}
+
+var options = {};
+
+try {
+    options = JSON.parse(fs.readFileSync( argv.c || argv.config ));
+} catch(ex) {
+    console.error("Failed to read configuration with error: " + ex) ;
+    return 1;
+}
+
+var ha = NodeHA();
+
+ha.createServer(options);
+ha.listen();
+
