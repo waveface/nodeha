@@ -1,4 +1,4 @@
-NodeHA, an high-availability reversed proxy implemented by Node.jS
+NodeHA, an high-availability reverse proxy implemented by Node.jS
 ==================================================================
 
 Introduction
@@ -24,9 +24,10 @@ Currently the initial target goal of nodeha is to complete the following feature
 
 Testing
 -------
-nodeha is using vows for its unit testing. Follow the instructions below to perform the testing:
+nodeha is using mocha for its BDD unit testing. Follow the instructions below to perform the testing:
 
-% npm install vows
+% npm install mocha
+% npm install should
 
-% vows test/* 
+% make test
 

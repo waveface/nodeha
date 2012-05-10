@@ -1,169 +1,211 @@
-var vows = require('vows'),
-    assert = require('assert'),
-    strategies = require('../lib/strategies'),
-    lbProxy = require('../lib/lbProxy');
+var strategies = require('../lib/strategies'),
+    lbProxy = require('../lib/lbProxy'),
+    should = require('should');
 
 var basic_options = {
 };
 
-vows.describe('Strategies test').addBatch({
-    'Round robin': {
-        "without proxy setting": {
-            topic: function() {
-                var proxy = new lbProxy.LoadBalancingProxy(basic_options);
-                return new strategies.RoundRobinStrategy(proxy.proxies, basic_options);
-            },
-            "should return null": function(strategy) {
-                assert(strategy.next() === null);
-                assert(strategy.next() === null);
-                assert(strategy.next() === null);
+var req = {},
+    res = {};
+
+describe('Strategy in round robin', function() {
+    describe("without proxy setting", function() {
+        var proxy = new lbProxy.LoadBalancingProxy(basic_options);
+        var strategy = new strategies.RoundRobinStrategy(proxy.proxies, basic_options);
+
+        it("should return null", function(done) {
+            strategy(req, res, function(err, p) {
+                should.exist(err);
+                done();
+            });
+        });
+
+        it("should return null", function(done) {
+            strategy(req, res, function(err, p) {
+                should.exist(err);
+                done();
+            });
+        });
+    });
+
+    describe("with one proxy setting", function() {
+        basic_options["backends"] = [
+            {
+                host: "127.0.0.1",
+                port: 8001,
+                https: false
             }
-        },
-        "with one proxy setting": {
-            topic: function() {
-                basic_options["backends"] = [
-                    {
-                        host: "127.0.0.1",
-                        port: 8001,
-                        https: false
-                    }
-                ];
-                var proxy = new lbProxy.LoadBalancingProxy(basic_options);
-                return new strategies.RoundRobinStrategy(proxy.proxies, basic_options);
-            },
-            "should always return the first one": function(strategy) {
-                var p = strategy.next();
-                assert(p.target.host === '127.0.0.1');
-                assert(p.target.port === 8001);
+        ];
+        var proxy = new lbProxy.LoadBalancingProxy(basic_options);
+        var strategy = new strategies.RoundRobinStrategy(proxy.proxies, basic_options);
 
-                var p = strategy.next();
-                assert(p.target.host === '127.0.0.1');
-                assert(p.target.port === 8001);
-            }
-        },
-        "Multiple proxies setting": {
-            topic: function() {
-                basic_options["backends"] = [
-                    {
-                        host: "127.0.0.1",
-                        port: 8001,
-                        https: false
-                    },
-                    {
-                        host: "192.168.1.1",
-                        port: 8001,
-                        https: false
-                    },
-                    {
-                        host: "192.168.1.2",
-                        port: 8001,
-                        https: false
-                    }
-                ];
-                var proxy = new lbProxy.LoadBalancingProxy(basic_options);
-                return new strategies.RoundRobinStrategy(proxy.proxies, basic_options);
-            },
+        it("should always return the first one", function(done) {
+            strategy(req, res, function(err, p) {
+                should.not.exist(err);
+                p.target.host.should.equal('127.0.0.1');
+                p.target.port.should.equal(8001);
+                done();
+            });
+        });
 
-            "should return the first one": function(strategy) {
-                var p = strategy.next();
-                assert(p.target.host === '127.0.0.1');
-            },
-
-            "should return the second one": function(strategy) {
-                var p = strategy.next();
-                assert(p.target.host === '192.168.1.1');
-            },
-
-            "should return the third one": function(strategy) {
-                var p = strategy.next();
-                assert(p.target.host === '192.168.1.2');
-            },
-
-            "should return the first one": function(strategy) {
-                var p = strategy.next();
-                assert(p.target.host === '127.0.0.1');
-            }
-        }
-    }
-}).addBatch({
-    'Source': {
-        "without proxy setting": {
-            topic: function() {
-                basic_options['backends'] = [];
-                var proxy = new lbProxy.LoadBalancingProxy(basic_options);
-                return new strategies.LeastConnectionStrategy(proxy.proxies, basic_options);
-            },
-            "should return null": function(strategy) {
-                assert(strategy.next() === null);
-                assert(strategy.next() === null);
-                assert(strategy.next() === null);
-            }
-        },
-
-        "with one proxy setting": {
-            topic: function() {
-                basic_options["backends"] = [
-                    {
-                        host: "127.0.0.1",
-                        port: 8001,
-                        https: false
-                    }
-                ];
-                var proxy = new lbProxy.LoadBalancingProxy(basic_options);
-                return new strategies.LeastConnectionStrategy(proxy.proxies, basic_options);
-            },
-            "should always return the first one": function(strategy) {
-                var p = strategy.next();
-                assert(p.target.host === '127.0.0.1');
-                assert(p.target.port === 8001);
-
-                var p = strategy.next();
-                assert(p.target.host === '127.0.0.1');
-                assert(p.target.port === 8001);
-            }
-        },
-
-        "with two proxy setting": {
-            topic: function() {
-                basic_options["backends"] = [
-                    {
-                        host: "127.0.0.1",
-                        port: 8001,
-                        https: false
-                    },
-                    {
-                        host: "127.0.0.2",
-                        port: 8002,
-                        https: false
-                    }
-                ];
-
-                var proxy = new lbProxy.LoadBalancingProxy(basic_options);
-                return new strategies.SourceStrategy(proxy.proxies, basic_options);
-            },
-
-            "should return the first one": function(strategy) {
-                var req = { connection: { remoteAddress: "10.1.1.0" } };
-                var p = strategy.next(req);
-                assert(p.target.host === '127.0.0.1');
-            },
-
-            "should return the second one": function(strategy) {
-                var req = { connection: { remoteAddress: "10.1.1.1" } };
-                var p = strategy.next(req);
-                assert(p.target.host === '127.0.0.2');
-            },
-
-            "should return the third one": function(strategy) {
-                var req = { connection: { remoteAddress: "10.1.1.1" } };
-                var p = strategy.next(req);
-                assert(p.target.host === '127.0.0.1');
-            }
-        }
         
-    }
-}).addBatch({
-    'LeastConnection': {
-    }   
-}).export(module);
+        it("should always return the first one", function(done) {
+            strategy(req, res, function(err, p) {
+                should.not.exist(err);
+                p.target.host.should.equal('127.0.0.1');
+                p.target.port.should.equal(8001);
+                done();
+            });
+        });
+    });
+
+    describe("Multiple proxies setting", function() {
+        basic_options["backends"] = [
+            {
+                host: "127.0.0.1",
+                port: 8001,
+                https: false
+            },
+            {
+                host: "192.168.1.1",
+                port: 8001,
+                https: false
+            },
+            {
+                host: "192.168.1.2",
+                port: 8001,
+                https: false
+            }
+        ];
+        var proxy = new lbProxy.LoadBalancingProxy(basic_options);
+        var strategy = new strategies.RoundRobinStrategy(proxy.proxies, basic_options);
+
+        it("should return the first one", function(done) {
+            strategy(req, res, function(err, p) {
+                should.not.exist(err);
+                p.target.host.should.equal('127.0.0.1');
+                done();
+            });
+        });
+
+        it("should return the second one", function(done) {
+            strategy(req, res, function(err, p) {
+                should.not.exist(err);
+                p.target.host.should.equal('192.168.1.1');
+                done();
+            });
+        });
+
+        it("should return the third one", function(done) {
+            strategy(req, res, function(err, p) {
+                should.not.exist(err);
+                p.target.host.should.equal('192.168.1.2');
+                done();
+            });
+        });
+
+        it("should return the first one", function(done) {
+            strategy(req, res, function(err, p) {
+                should.not.exist(err);
+                p.target.host.should.equal('127.0.0.1');
+                done();
+            });
+        });
+    });
+});
+
+describe('Strategy in source', function() {
+    describe("without proxy setting", function() {
+        basic_options['backends'] = [];
+        var proxy = new lbProxy.LoadBalancingProxy(basic_options);
+        var strategy = new strategies.SourceStrategy(proxy.proxies, basic_options);
+
+        it("should return null", function(done) {
+            strategy(req, res, function(err, p) {
+                should.exist(err);
+                done();
+            });
+        });
+
+        it("should return null", function(done) {
+            strategy(req, res, function(err, p) {
+                should.exist(err);
+                done();
+            });
+        });
+
+    });
+
+    describe("with one proxy setting", function() {
+        basic_options["backends"] = [
+            {
+                host: "127.0.0.1",
+                port: 8001,
+                https: false
+            }
+        ];
+        var proxy = new lbProxy.LoadBalancingProxy(basic_options);
+        var strategy = new strategies.SourceStrategy(proxy.proxies, basic_options);
+    
+        it("should always return the first one", function(done) {
+            var req = { connection: { remoteAddress: "10.1.1.0" } };
+            strategy(req, res, function(err, p) {
+                p.target.host.should.equal('127.0.0.1');
+                p.target.port.should.equal(8001);
+                done();
+            });
+        });
+
+        it("should always return the first one", function(done) {
+            var req = { connection: { remoteAddress: "10.1.1.1" } };
+            strategy(req, res, function(err, p) {
+                p.target.host.should.equal('127.0.0.1');
+                p.target.port.should.equal(8001);
+                done();
+            });
+        });
+    });
+
+    describe("with two proxy setting", function() {
+        basic_options["backends"] = [
+            {
+                host: "127.0.0.1",
+                port: 8001,
+                https: false
+            },
+            {
+                host: "127.0.0.2",
+                port: 8002,
+                https: false
+            }
+        ];
+
+        var proxy = new lbProxy.LoadBalancingProxy(basic_options);
+        var strategy = new strategies.SourceStrategy(proxy.proxies, basic_options);
+
+        it("should return the first one", function(done) {
+            var req = { connection: { remoteAddress: "10.1.1.0" } };
+            strategy(req, res, function(err, p) {
+                p.target.host.should.equal('127.0.0.1');
+                done();
+            });
+        });
+
+        it("should return the second one", function(done) {
+            var req = { connection: { remoteAddress: "10.1.1.1" } };
+            strategy(req, res, function(err, p) {
+                p.target.host.should.equal('127.0.0.2');
+                done();
+            });
+        });
+
+        it("should return the second one", function(done) {
+            var req = { connection: { remoteAddress: "10.1.1.2" } };
+            strategy(req, res, function(err, p) {
+                p.target.host.should.equal('127.0.0.1');
+                done();
+            });
+        });
+    });
+});
 
