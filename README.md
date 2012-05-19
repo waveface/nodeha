@@ -21,6 +21,25 @@ Currently the initial target goal of nodeha is to complete the following feature
 - Support both HTTP/HTTPS backends
 - X-Forwarded-For
 - Logging
+- HTTP header based routing
+- Support websocket
+
+
+Current Status
+--------------
+It is still under heavy development, we welcome your feedbacks, but this module has not been well tested, think again before you want to use it. 
+We already implemented the following features:
+- routing strategies: rr, least connection, source
+- backend healthy check
+- http/https frontend
+- http/https backend
+
+And now we are working hard on the following features:
+- X-Forwarded-For
+- More detail logging
+- HTTP header based routing
+- Websocket
+
 
 Testing
 -------
