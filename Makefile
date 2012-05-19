@@ -1,4 +1,4 @@
 test:
-	mocha -R list test/*
+	mocha -R list --ignore-leaks test/*
 
 .PHONY: test

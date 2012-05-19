@@ -1,5 +1,5 @@
 var http = require('http');
-var NodeHA = require('./nodeha').NodeHA;
+var NodeHA = require('../lib/nodeha').NodeHA;
 
 var options = {
     loadbalance: {
