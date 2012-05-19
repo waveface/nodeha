@@ -5,6 +5,11 @@ Introduction
 ------------
 nodeha is a high availability reverse proxy implemented by Node.js. By leveraging Node's asynchronous behavior, in theory, nodeha is a high performance reverse proxy which could hold high volume of concurrent connections at the same time. And diffrent to HAProxy, another well known async proxy, nodeha doesn't need other 3rd-party application to decrypt the SSL connection. You can directly place nodeha in front of your web sites, host the SSL certificates, and offload the SSL traffic decription from your web site.
 
+Install
+-------
+
+% npm install nodeha
+
 Features
 --------
 Currently the initial target goal of nodeha is to complete the following features:

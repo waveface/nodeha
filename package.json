@@ -2,7 +2,7 @@
   "name": "nodeha",
   "version": "0.0.1",
   "description": "A high availability for backend web service load balancing",
-  "author": "Ben Wei <ben@staros.mobi>, Steven Shen <sysheen@gmail.com> (http://syshen.cc)",
+  "author": "Steven Shen <sysheen@gmail.com> (http://syshen.cc)",
   "dependencies": {
     "optimist": "0.2.x",
     "http-proxy": "0.8.0"
@@ -17,6 +17,10 @@
   "devDependencies": {},
   "optionalDependencies": {},
   "repository": {
-    "url": ""
+    "type": "git",
+    "url": "git://github.com/waveface/nodeha.git"
+  },
+  "scripts": {
+    "test": "make test"
   }
 }
