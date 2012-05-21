@@ -16,6 +16,23 @@ var options = {
         https: false
     },
 
+    log: {
+        'appenders': [
+            {
+                'type': 'file',
+                'filename': 'log.txt',
+                'category': 'log-file'
+            },
+            {
+                'type': 'console',
+                'category': 'console'
+            }
+        ],
+        'level': 'DEBUG',
+        'accesslog': 'log-file',
+        'debuglog': 'console'
+    },
+
     backends: [
         {
             host: "127.0.0.1",

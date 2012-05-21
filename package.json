@@ -5,7 +5,8 @@
   "author": "Steven Shen <sysheen@gmail.com> (http://syshen.cc)",
   "dependencies": {
     "optimist": "0.2.x",
-    "http-proxy": "0.8.0"
+    "http-proxy": "0.8.0",
+    "log4js": "0.4.0"
   },
   "main": "./lib/nodeha",
   "bin": {

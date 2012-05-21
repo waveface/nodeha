@@ -17,6 +17,12 @@ var haoptions = {
         https: false
     },
 
+    log: {
+        accesslog: 'none-exist',
+        debuglog: 'none-exist',
+        level: 'FATAL'
+    },
+
     backends: [
         {
             host: "127.0.0.1",
@@ -39,14 +45,14 @@ var haoptions = {
     ]
 };
 
-var servers = [];
 
+var servers = [];
 function start_servers() {
     var idx = 0;
     haoptions.backends.forEach(function(s) {
         var server = http.createServer(function(req, res) {
             res.writeHead(200);
-            res.end("server port: " + s.port); 
+            res.end('{ "port" : ' + s.port + ', "client_addr": "' + req.headers['x-forwarded-for'] + '", "client_proto": "' + req.headers['x-forwarded-proto'] +'" }'); 
         }).listen(s.port);
         idx ++;
         servers[idx] = server;
@@ -75,11 +81,17 @@ describe("Test proxy with round robin strategy", function() {
 
         var req = http.request(cli_opts, function(res) {
             res.on('data', function(chunk) {
-                chunk.toString().should.equal('server port: 8001');           
+                var retObj = JSON.parse(chunk.toString());
+                retObj.port.should.equal(8001);
+                retObj.client_addr.should.equal('127.0.0.1');
+                retObj.client_proto.should.equal('http');
 
                 var req2 = http.request(cli_opts, function(res) {
                     res.on('data', function(chunk) {
-                        chunk.toString().should.equal('server port: 8002');           
+                        var retObj2 = JSON.parse(chunk.toString());
+                        retObj2.port.should.equal(8002);
+                        retObj2.client_addr.should.equal('127.0.0.1');
+                        retObj2.client_proto.should.equal('http');
                         ha.close();
                         stop_servers();
                         done();
