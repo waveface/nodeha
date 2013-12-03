@@ -77,5 +77,5 @@ var server3 = http.createServer(function (req, res) {
 var ha = NodeHA();
 
 ha.createServer(options);
-ha.listen(8000);
+ha.listen();
 
